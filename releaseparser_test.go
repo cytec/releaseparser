@@ -278,6 +278,20 @@ func TestParse(t *testing.T) {
 			Resolution:  "720p",
 			Uncut:       true,
 		},
+		"Skins.S06E10.Finale.German.DD20.Dubbed.DL.720p.AmazonHD.x264-TVS": &releaseparser.Release{
+			Type:        "tvshow",
+			Title:       "Skins",
+			Season:      6,
+			Episode:     10,
+			Group:       "TVS",
+			Language:    "German",
+			Source:      "AmazonHD",
+			Codec:       "x264",
+			SourceGroup: "WEBDL",
+			CodecGroup:  "X264",
+			Audio:       "DD20",
+			Resolution:  "720p",
+		},
 	}
 
 	for title, want := range test {
