@@ -7,13 +7,16 @@ import (
 )
 
 var (
-	season     = `([Ss]?([0-9]{1,2}))[Eex]|([Ss]([0-9]{1,2}))`
-	episode    = `([Eex]([0-9]{2,4}(?:[abc])?)(?:[^0-9]|$))`
+	// season = `(?i)[\. ](s[0-9]{2}-s[0-9]{2}|s([0-9]{1,2})[Eex]|([0-9]{1,2})x[0-9]{2})(?:[\. ]|$)`
+	// season     = `([Ss]?([0-9]{1,2}))[Eex]|([Ss]([0-9]{1,2}))`
+	season = `(?i)(s[0-9]{2}-s[0-9]{2}|s([0-9]{1,2})[eEx])|([Ss]?([0-9]{1,2}))[Eex]|([Ss]([0-9]{1,2}))`
+	// episode    = `([Eex]([0-9]{2,4}(?:[abc])?)(?:[^0-9]|$))`
+	episode    = `([Eex]([0-9]{2,4}-?[Eex]?[0-9]{2,4}))|([Eex]([0-9]{2,4}(?:[abc])?)(?:[^0-9]|$))`
 	year       = `([\[\(]?((?:19[0-9]|20[01])[0-9])[\]\)]?)`
 	resolution = `(?P<480p>480p|640x480|848x480)|(?P<576p>576p)|(?P<720p>720p|1280x720)|(?P<1080p>1080p|1920x1080)|(?P<2160p>2160p)`
 	source     = `(?i)(\b)(?P<bdrip>BDRip)|(?P<brrip>BRRip)|(?P<bluray>BluRay|Blu-Ray|HDDVD|BD)|(?P<webdl>WEB[-_. ]DL|HDRIP|WEBDL|FUNi-DL|WebRip|Web-Rip|AmazonHD|NetflixHD|iTunesHD|WebHD|[. ]WEB[. ](?:[xh]26[45]|DD5[. ]1)|\\d+0p[. ]WEB[. ])|(?P<hdtv>HDTV)|(?P<scr>SCR|SCREENER|DVDSCR|DVDSCREENER)|(?P<dvd>DVDRip|DVD[^-R]|NTSC|PAL|xvidvd)|(?P<dvdr>DVD-R|DVDR|DVD[0-9])|(?P<dsr>WS[-_. ]DSR|DSR)|(?P<ts>\bTS|TELESYNC|HD-TS|HDTS|PDVD\b)|(?P<tc>TC|TELECINE|HD-TC|HDTC)|(?P<cam>CAMRIP|CAM|HDCAM|HD-CAM)|(?P<wp>WORKPRINT|WP)|(?P<pdtv>PDTV)|(?P<sdtv>SDTV)|(?P<tvrip>TVRip|[ad]TV)(\b)`
 	// codec      = `(?i)dvix|mpeg[0-9]|divx|xvid(?:hd)?|(?:x|h)[-\. ]?26(?:4|5)|avc|hevc|vp(?:8|9)`
-	codec      = `(?i)(?P<x264>x264)|(?P<h264>h264)|(?P<h265>h265|hevc)|(?P<xvidhd>XvidHD)|(?P<xvid>X-?vid)|(?P<divx>divx|mpeg[0-9])(?P<vp>vp(?:8|9))`
+	codec      = `(?i)(?P<x264>x264)|(?P<h264>h264)|(?P<h265>[xh]265|hevc)|(?P<xvidhd>XvidHD)|(?P<xvid>X-?vid)|(?P<divx>divx|mpeg[0-9])(?P<vp>vp(?:8|9))`
 	audio      = `(?i)MP3|FLAC|DD[\s\.]?(2|5)\.?(1|0)|Dual[\- ]Audio|LiNE|DTS|AAC(?:\.?2\.0)?|AC3D?(?:\.5\.1)?`
 	group      = `(?:- ?([^-]+))$`
 	region     = `R[0-9]{1}`
@@ -61,7 +64,9 @@ type Release struct {
 	Title       string // holds the release title without dots underscores and hypens
 	Type        string // movie OR tvshow
 	Season      int    // season number
+	SeasonEnd   int    // 0 or end season for multi season releases
 	Episode     int    // episode number
+	EpisodeEnd  int    // 0 er end episode number for multi episode releases
 	Year        int    // year
 	Resolution  string // 720p, 1080p etc
 	Source      string // the release source ex: BluRay, HDTV
@@ -146,11 +151,27 @@ func Parse(s string) *Release {
 			match := s[loc[0]:loc[1]]
 			switch name {
 			case "season":
-				r.Season = parseInt(match)
+				seasons := strings.Split(match, "-")
+				if len(seasons) > 1 {
+					r.SeasonEnd = parseInt(seasons[1])
+				}
+				r.Season = parseInt(seasons[0])
 			case "episode":
+
 				//if make sure we dont match codec as episode
 				if !regexp.MustCompile(codec).MatchString(match) {
-					r.Episode = parseInt(match)
+					//split multiep strings
+					tmp := regexp.MustCompile(`(?i)(\.|-|e|x)`).Split(match, -1)
+					episodes := []string{}
+					for _, v := range tmp {
+						if v != "" {
+							episodes = append(episodes, v)
+						}
+					}
+					if len(episodes) > 1 {
+						r.EpisodeEnd = parseInt(episodes[1])
+					}
+					r.Episode = parseInt(episodes[0])
 				}
 			case "year":
 				r.Year = parseInt(match)

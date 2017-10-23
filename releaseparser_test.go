@@ -308,6 +308,29 @@ func TestParse(t *testing.T) {
 			Source:      "DVD-R",
 			SourceGroup: "DVDR",
 		},
+		"The.X-Files.S01-S03.DKsubs.1080p.BluRay.HEVC.x265": &releaseparser.Release{
+			Type:        "tvshow",
+			Title:       "The X Files",
+			Season:      1,
+			SeasonEnd:   3,
+			Resolution:  "1080p",
+			Source:      "BluRay",
+			SourceGroup: "BLURAY",
+			Codec:       "HEVC",
+			CodecGroup:  "H265",
+		},
+		"The.X-Files.S01E01-E03.DKsubs.1080p.BluRay.HEVC.x265": &releaseparser.Release{
+			Type:        "tvshow",
+			Title:       "The X Files",
+			Season:      1,
+			Episode:     1,
+			EpisodeEnd:  3,
+			Resolution:  "1080p",
+			Source:      "BluRay",
+			SourceGroup: "BLURAY",
+			Codec:       "HEVC",
+			CodecGroup:  "H265",
+		},
 	}
 
 	for title, want := range test {
@@ -323,8 +346,14 @@ func TestParse(t *testing.T) {
 		if want.Season != parsed.Season {
 			t.Errorf("Season failed, got: %d, want: %d", parsed.Season, want.Season)
 		}
+		if want.SeasonEnd != parsed.SeasonEnd {
+			t.Errorf("SeasonEnd failed, got: %d, want: %d", parsed.SeasonEnd, want.SeasonEnd)
+		}
 		if want.Episode != parsed.Episode {
 			t.Errorf("Episode failed, got: %d, want: %d", parsed.Episode, want.Episode)
+		}
+		if want.EpisodeEnd != parsed.EpisodeEnd {
+			t.Errorf("EpisodeEnd failed, got: %d, want: %d", parsed.EpisodeEnd, want.EpisodeEnd)
 		}
 		if want.Year != parsed.Year {
 			t.Errorf("Year failed, got: %d, want: %d", parsed.Year, want.Year)
