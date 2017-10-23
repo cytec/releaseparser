@@ -7,15 +7,11 @@ import (
 )
 
 var (
-	// season = `(?i)[\. ](s[0-9]{2}-s[0-9]{2}|s([0-9]{1,2})[Eex]|([0-9]{1,2})x[0-9]{2})(?:[\. ]|$)`
-	// season     = `([Ss]?([0-9]{1,2}))[Eex]|([Ss]([0-9]{1,2}))`
-	season = `(?i)(s[0-9]{2}-s[0-9]{2}|s([0-9]{1,2})[eEx])|([Ss]?([0-9]{1,2}))[Eex]|([Ss]([0-9]{1,2}))`
-	// episode    = `([Eex]([0-9]{2,4}(?:[abc])?)(?:[^0-9]|$))`
+	season     = `(?i)(s[0-9]{2}-s[0-9]{2}|s([0-9]{1,2})[eEx])|([Ss]?([0-9]{1,2}))[Eex]|([Ss]([0-9]{1,2}))`
 	episode    = `([Eex]([0-9]{2,4}-?[Eex]?[0-9]{2,4}))|([Eex]([0-9]{2,4}(?:[abc])?)(?:[^0-9]|$))`
 	year       = `([\[\(]?((?:19[0-9]|20[01])[0-9])[\]\)]?)`
 	resolution = `(?P<480p>480p|640x480|848x480)|(?P<576p>576p)|(?P<720p>720p|1280x720)|(?P<1080p>1080p|1920x1080)|(?P<2160p>2160p)`
-	source     = `(?i)(\b)(?P<bdrip>BDRip)|(?P<brrip>BRRip)|(?P<bluray>BluRay|Blu-Ray|HDDVD|BD)|(?P<webdl>WEB[-_. ]DL|HDRIP|WEBDL|FUNi-DL|WebRip|Web-Rip|AmazonHD|NetflixHD|iTunesHD|WebHD|[. ]WEB[. ](?:[xh]26[45]|DD5[. ]1)|\\d+0p[. ]WEB[. ])|(?P<hdtv>HDTV)|(?P<scr>SCR|SCREENER|DVDSCR|DVDSCREENER)|(?P<dvd>DVDRip|DVD[^-R]|NTSC|PAL|xvidvd)|(?P<dvdr>DVD-R|DVDR|DVD[0-9])|(?P<dsr>WS[-_. ]DSR|DSR)|(?P<ts>\bTS|TELESYNC|HD-TS|HDTS|PDVD\b)|(?P<tc>TC|TELECINE|HD-TC|HDTC)|(?P<cam>CAMRIP|CAM|HDCAM|HD-CAM)|(?P<wp>WORKPRINT|WP)|(?P<pdtv>PDTV)|(?P<sdtv>SDTV)|(?P<tvrip>TVRip|[ad]TV)(\b)`
-	// codec      = `(?i)dvix|mpeg[0-9]|divx|xvid(?:hd)?|(?:x|h)[-\. ]?26(?:4|5)|avc|hevc|vp(?:8|9)`
+	source     = `(?i)\b(?:(?P<bdrip>BDRip)|(?P<brrip>BRRip)|(?P<bluray>BluRay|Blu-Ray|HDDVD|BD)|(?P<webdl>WEB[-_. ]DL|HDRIP|WEBDL|FUNi-DL|WebRip|Web-Rip|AmazonHD|NetflixHD|iTunesHD|WebHD|[. ]WEB[. ](?:[xh]26[45]|DD5[. ]1)|\\d+0p[. ]WEB[. ])|(?P<hdtv>HDTV)|(?P<scr>SCR|SCREENER|DVDSCR|DVDSCREENER)|(?P<dvd>DVDRip|DVD[^-R]|NTSC|PAL|xvidvd)|(?P<dvdr>DVD-R|DVDR|DVD[0-9])|(?P<dsr>WS[-_. ]DSR|DSR)|(?P<ts>TS|TELESYNC|HD-TS|HDTS|PDVD\b)|(?P<tc>TC|TELECINE|HD-TC|HDTC)|(?P<cam>CAMRIP|CAM|HDCAM|HD-CAM)|(?P<wp>WORKPRINT|WP)|(?P<pdtv>PDTV)|(?P<sdtv>SDTV)|(?P<tvrip>TVRip|[ad]TV))\b`
 	codec      = `(?i)(?P<x264>x264)|(?P<h264>h264)|(?P<h265>[xh]265|hevc)|(?P<xvidhd>XvidHD)|(?P<xvid>X-?vid)|(?P<divx>divx|mpeg[0-9])(?P<vp>vp(?:8|9))`
 	audio      = `(?i)MP3|FLAC|DD[\s\.]?(2|5)\.?(1|0)|Dual[\- ]Audio|LiNE|DTS|AAC(?:\.?2\.0)?|AC3D?(?:\.5\.1)?`
 	group      = `(?:- ?([^-]+))$`
@@ -29,8 +25,10 @@ var (
 	repack     = `(?i)\bREPACK\b`
 	is3d       = `(?i)\b3d\b`
 	widescreen = `(?i)\bWS\b`
-	container  = `(?i)\bMKV|AVI|MP4|mkv|avi|mp4\b`
+	container  = `(?i)\bMKV|AVI|MP4|mkv|avi|mp4|m4v\b`
 	website    = `^(\[ ?([^\]]+?) ?\])`
+	sbs        = `\b(?i)(?:Half-)?SBS\b`
+	size       = `(\d+(?:\.\d+)?(?:GB|MB))`
 	language   = `(?i)\b(?:TRUE)?FR(?:ENCH)?\b|\bDE(?:UTSCH)?\b|\bGERMAN\b|\bEN(?:G(?:LISH)?)?\b|\bVOST(?:(F(?:R)?)|A)?\b|\bMULTI(?:Lang|Truefrench|\-VF2)?\b|\bSUBFRENCH\b|\bHindi\b`
 
 	regexlist = map[string]string{
@@ -55,6 +53,8 @@ var (
 		"container":  container,
 		"website":    website,
 		"language":   language,
+		"sbs":        sbs,
+		"size":       size,
 	}
 )
 
@@ -80,6 +80,8 @@ type Release struct {
 	Container   string // the container file format ex: mkv
 	Website     string // the release website if in the name ex: [ my.site.com ]
 	Language    string // language of the release ex: german, Spanish
+	SBS         string // Full-SBS or SBS
+	Size        string // size if present in title
 	Doku        bool   // true if release is dokumentation
 	Extended    bool   // true if release is extended version
 	Hardcoded   bool   // true if release is a Hardcoded release
@@ -202,6 +204,10 @@ func Parse(s string) *Release {
 				r.Website = match
 			case "language":
 				r.Language = match
+			case "sbs":
+				r.SBS = match
+			case "size":
+				r.Size = match
 			case "doku":
 				r.Doku = true
 			case "extended":

@@ -95,6 +95,7 @@ func TestParse(t *testing.T) {
 			SourceGroup: "BRRIP",
 			CodecGroup:  "X264",
 			Group:       "m2g",
+			SBS:         "Half-SBS",
 			Audio:       "AAC",
 			Resolution:  "1080p",
 			Is3D:        true,
@@ -331,6 +332,15 @@ func TestParse(t *testing.T) {
 			Codec:       "HEVC",
 			CodecGroup:  "H265",
 		},
+		"Lucy 2014 Dual-Audio WEBRip 900MB": &releaseparser.Release{
+			Type:        "movie",
+			Title:       "Lucy",
+			Year:        2014,
+			Audio:       "Dual-Audio",
+			Source:      "WEBRip",
+			SourceGroup: "WEBDL",
+			Size:        "900MB",
+		},
 	}
 
 	for title, want := range test {
@@ -420,6 +430,12 @@ func TestParse(t *testing.T) {
 		}
 		if want.Language != parsed.Language {
 			t.Errorf("Language failed, got: %s, want: %s", parsed.Language, want.Language)
+		}
+		if want.SBS != parsed.SBS {
+			t.Errorf("SBS failed, got: %s, want: %s", parsed.SBS, want.SBS)
+		}
+		if want.Size != parsed.Size {
+			t.Errorf("Size failed, got: %s, want: %s", parsed.Size, want.Size)
 		}
 	}
 
