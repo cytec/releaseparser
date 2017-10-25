@@ -60,37 +60,37 @@ var (
 
 // Release represents a scene release
 type Release struct {
-	Input       string // holds a copy of the input string
-	Title       string // holds the release title without dots underscores and hypens
-	Type        string // movie OR tvshow
-	Season      int    // season number
-	SeasonEnd   int    // 0 or end season for multi season releases
-	Episode     int    // episode number
-	EpisodeEnd  int    // 0 er end episode number for multi episode releases
-	Year        int    // year
-	Resolution  string // 720p, 1080p etc
-	Source      string // the release source ex: BluRay, HDTV
-	SourceGroup string // normalized Source Name for textmatching (ex: Blu-Ray, BluRay, BD, HDDVD => BLURAY)
-	Codec       string // video codec ex: x264
-	CodecGroup  string // normalized Codec Name for textmatching (ex: divx => DIVX)
-	Audio       string // audio codec ex: FlAC, MP3, AC3
-	AudioGroup  string // normalized Audio Name for textmatching (ex: DD5.1,DD => DD)
-	Group       string // the name of the releasegroup
-	Region      string // contains Region info ex: R9
-	Container   string // the container file format ex: mkv
-	Website     string // the release website if in the name ex: [ my.site.com ]
-	Language    string // language of the release ex: german, Spanish
-	SBS         string // Full-SBS or SBS
-	Size        string // size if present in title
-	Doku        bool   // true if release is dokumentation
-	Extended    bool   // true if release is extended version
-	Hardcoded   bool   // true if release is a Hardcoded release
-	Subbed      bool   // true if release is subbed
-	Proper      bool   // true if release is proper
-	Repack      bool   // true if release is repack
-	Is3D        bool   // true if release is in 3D
-	Uncut       bool   // true if release is uncut version
-	Widescreen  bool   // true if release is a widerscreen/letterbox release
+	Input       string `json:"input,omitempty"`        // holds a copy of the input string
+	Title       string `json:"title,omitempty"`        // holds the release title without dots underscores and hypens
+	Type        string `json:"type,omitempty"`         // movie OR tvshow
+	Season      int    `json:"season,omitempty"`       // season number
+	SeasonEnd   int    `json:"season_end,omitempty"`   // 0 or end season for multi season releases
+	Episode     int    `json:"episode,omitempty"`      // episode number
+	EpisodeEnd  int    `json:"episode_end,omitempty"`  // 0 er end episode number for multi episode releases
+	Year        int    `json:"year,omitempty"`         // year
+	Resolution  string `json:"resolution,omitempty"`   // 720p, 1080p etc
+	Source      string `json:"source,omitempty"`       // the release source ex: BluRay, HDTV
+	SourceGroup string `json:"source_group,omitempty"` // normalized Source Name for textmatching (ex: Blu-Ray, BluRay, BD, HDDVD => BLURAY)
+	Codec       string `json:"codec,omitempty"`        // video codec ex: x264
+	CodecGroup  string `json:"codec_group,omitempty"`  // normalized Codec Name for textmatching (ex: divx => DIVX)
+	Audio       string `json:"audio,omitempty"`        // audio codec ex: FlAC, MP3, AC3
+	AudioGroup  string `json:"audio_group,omitempty"`  // normalized Audio Name for textmatching (ex: DD5.1,DD => DD)
+	Group       string `json:"group,omitempty"`        // the name of the releasegroup
+	Region      string `json:"region,omitempty"`       // contains Region info ex: R9
+	Container   string `json:"container,omitempty"`    // the container file format ex: mkv
+	Website     string `json:"website,omitempty"`      // the release website if in the name ex: [ my.site.com ]
+	Language    string `json:"language,omitempty"`     // language of the release ex: german, Spanish
+	SBS         string `json:"sbs,omitempty"`          // Full-SBS or SBS
+	Size        string `json:"size,omitempty"`         // size if present in title
+	Doku        bool   `json:"doku,omitempty"`         // true if release is dokumentation
+	Extended    bool   `json:"extended,omitempty"`     // true if release is extended version
+	Hardcoded   bool   `json:"hardcoded,omitempty"`    // true if release is a Hardcoded release
+	Subbed      bool   `json:"subbed,omitempty"`       // true if release is subbed
+	Proper      bool   `json:"proper,omitempty"`       // true if release is proper
+	Repack      bool   `json:"repack,omitempty"`       // true if release is repack
+	Is3D        bool   `json:"is_3d,omitempty"`        // true if release is in 3D
+	Uncut       bool   `json:"uncut,omitempty"`        // true if release is uncut version
+	Widescreen  bool   `json:"widescreen,omitempty"`   // true if release is a widerscreen/letterbox release
 	start       int
 	end         int
 	parts       map[string]string

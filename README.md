@@ -9,7 +9,7 @@ A package used to parse scene release names
 ## Installation
 
 ```bash
-go get -u github.com/cytec/releaseparser
+go get -u github.com/cytec/releaseparser/...
 ```
 
 ## Examples
