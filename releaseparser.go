@@ -232,7 +232,7 @@ func Parse(s string) *Release {
 		}
 	}
 
-	if r.end != 0 {
+	if r.end != 0 && r.end <= len(r.Input) && r.start < r.end {
 		r.Title = cleanTitle(r.Input[r.start:r.end])
 	}
 
