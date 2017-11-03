@@ -1,6 +1,7 @@
 package releaseparser
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -30,6 +31,7 @@ var (
 	sbs        = `\b(?i)(?:Half-)?SBS\b`
 	size       = `(\d+(?:\.\d+)?(?:GB|MB))`
 	language   = `(?i)\b(?:TRUE)?FR(?:ENCH)?\b|\bDE(?:UTSCH)?\b|\bGERMAN\b|\bEN(?:G(?:LISH)?)?\b|\bVOST(?:(F(?:R)?)|A)?\b|\bMULTI(?:Lang|Truefrench|\-VF2)?\b|\bSUBFRENCH\b|\bHindi\b`
+	password   = `(?i){{(?:[^{}]+)}}`
 
 	regexlist = map[string]string{
 		"season":     season,
@@ -39,7 +41,7 @@ var (
 		"source":     source,
 		"codec":      codec,
 		"audio":      audio,
-		"group":      group,
+		"language":   language,
 		"region":     region,
 		"doku":       doku,
 		"extended":   extended,
@@ -52,9 +54,10 @@ var (
 		"widescreen": widescreen,
 		"container":  container,
 		"website":    website,
-		"language":   language,
 		"sbs":        sbs,
 		"size":       size,
+		"password":   password,
+		"group":      group,
 	}
 )
 
@@ -80,6 +83,7 @@ type Release struct {
 	Container   string `json:"container,omitempty"`    // the container file format ex: mkv
 	Website     string `json:"website,omitempty"`      // the release website if in the name ex: [ my.site.com ]
 	Language    string `json:"language,omitempty"`     // language of the release ex: german, Spanish
+	Password    string `json:"password,omitempty"`     // if there is a password found it will be here
 	SBS         string `json:"sbs,omitempty"`          // Full-SBS or SBS
 	Size        string `json:"size,omitempty"`         // size if present in title
 	Doku        bool   `json:"doku,omitempty"`         // true if release is dokumentation
@@ -191,9 +195,16 @@ func Parse(s string) *Release {
 				r.AudioGroup = getMatchedGroupName(re, match)
 			case "group":
 				// if codec or source is in group skip it
-				if regexp.MustCompile(codec).MatchString(match) || regexp.MustCompile(source).MatchString(match) {
+				if regexp.MustCompile(codec).MatchString(match) || regexp.MustCompile(source).MatchString(match) || regexp.MustCompile(language).MatchString(match) {
 					continue
 				} else {
+					//remove password from group
+					if r.Password != "" {
+						tmpPass := fmt.Sprintf("{{%s}}", r.Password)
+						if strings.Contains(match, tmpPass) {
+							match = strings.Replace(match, tmpPass, "", 1)
+						}
+					}
 					r.Group = strings.Replace(match, "-", "", 1)
 				}
 			case "region":
@@ -206,6 +217,8 @@ func Parse(s string) *Release {
 				r.Language = match
 			case "sbs":
 				r.SBS = match
+			case "password":
+				r.Password = match[2 : len(match)-2]
 			case "size":
 				r.Size = match
 			case "doku":
