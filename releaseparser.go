@@ -1,7 +1,6 @@
 package releaseparser
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -12,7 +11,7 @@ var (
 	episode    = `([Eex]([0-9]{2,4}-?[Eex]?[0-9]{2,4}))|([Eex]([0-9]{2,4}(?:[abc])?)(?:[^0-9]|$))`
 	year       = `([\[\(]?((?:19[0-9]|20[01])[0-9])[\]\)]?)`
 	resolution = `(?P<480p>480p|640x480|848x480)|(?P<576p>576p)|(?P<720p>720p|1280x720)|(?P<1080p>1080p|1920x1080)|(?P<2160p>2160p)`
-	source     = `(?i)\b(?:(?P<bdrip>BDRip)|(?P<brrip>BRRip)|(?P<bluray>BluRay|Blu-Ray|HDDVD|BD)|(?P<webdl>WEB[-_. ]DL|HDRIP|WEBDL|FUNi-DL|WebRip|Web-Rip|AmazonHD|NetflixHD|iTunesHD|WebHD|[. ]WEB[. ](?:[xh]26[45]|DD5[. ]1)|\\d+0p[. ]WEB[. ])|(?P<hdtv>HDTV)|(?P<scr>SCR|SCREENER|DVDSCR|DVDSCREENER)|(?P<dvd>DVDRip|DVD[^-R]|NTSC|PAL|xvidvd)|(?P<dvdr>DVD-R|DVDR|DVD[0-9])|(?P<dsr>WS[-_. ]DSR|DSR)|(?P<ts>TS|TELESYNC|HD-TS|HDTS|PDVD\b)|(?P<tc>TC|TELECINE|HD-TC|HDTC)|(?P<cam>CAMRIP|CAM|HDCAM|HD-CAM)|(?P<wp>WORKPRINT|WP)|(?P<pdtv>PDTV)|(?P<sdtv>SDTV)|(?P<tvrip>TVRip|[ad]TV))\b`
+	source     = `(?i)\b(?:(?P<bdrip>BDRip)|(?P<brrip>BRRip)|(?P<bluray>BluRay|Blu-Ray|HDDVD|BD)|(?P<webdl>WEB[-_. ]DL|HDRIP|WEBDL|FUNi-DL|WebRip|Web-Rip|AmazonHD|NetflixHD|iTunesHD|WebHD|[. ]WEB[. ](?:[xh]26[45]|DD5[. ]1)|\\d+0p[. ]WEB[. ])|(?P<hdtv>HDTV)|(?P<scr>SCR|SCREENER|DVDSCR|DVDSCREENER)|(?P<dvd>DVDRip|DVD[^-R]|NTSC|PAL|xvidvd)|(?P<dvdr>DVD-R|DVDR|DVD[0-9])|(?P<dsr>WS[-_. ]DSR|DSR)|(?P<ts>TS|TELESYNC|HD-TS|HDTS|PDVD\b)|(?P<tc>TC|TELECINE|HD-TC|HDTC)|(?P<cam>CAMRIP|CAM|HDCAM|HD-CAM)|(?P<wp>WORKPRINT|WP)|(?P<pdtv>PDTV)|(?P<sdtv>SDTV)|(?P<tvrip>(HD)?TVRip|[ad]TV))\b`
 	codec      = `(?i)(?P<x264>x264)|(?P<h264>h264)|(?P<h265>[xh]265|hevc)|(?P<xvidhd>XvidHD)|(?P<xvid>X-?vid)|(?P<divx>divx|mpeg[0-9])(?P<vp>vp(?:8|9))`
 	audio      = `(?i)MP3|FLAC|DD[\s\.]?(2|5)\.?(1|0)|Dual[\- ]Audio|LiNE|DTS|AAC(?:\.?2\.0)?|AC3D?(?:\.5\.1)?`
 	group      = `(?:- ?([^-]+))$`
@@ -56,7 +55,6 @@ var (
 		"website":    website,
 		"sbs":        sbs,
 		"size":       size,
-		"password":   password,
 		"group":      group,
 	}
 )
@@ -151,6 +149,15 @@ func cleanTitle(name string) string {
 func Parse(s string) *Release {
 	r := Release{Input: s, parts: make(map[string]string)}
 
+	//cut password from string because this might mess up correct detection of other infos...
+	pwregex := regexp.MustCompile(password)
+	if pwloc := pwregex.FindStringIndex(s); pwloc != nil {
+		pwmatch := s[pwloc[0]:pwloc[1]]
+		r.Password = pwmatch[2 : len(pwmatch)-2]
+
+		s = pwregex.ReplaceAllString(s, "")
+	}
+
 	for name, str := range regexlist {
 		re := regexp.MustCompile(str)
 		if loc := re.FindStringIndex(s); loc != nil {
@@ -198,13 +205,6 @@ func Parse(s string) *Release {
 				if regexp.MustCompile(codec).MatchString(match) || regexp.MustCompile(source).MatchString(match) || regexp.MustCompile(language).MatchString(match) {
 					continue
 				} else {
-					//remove password from group
-					if r.Password != "" {
-						tmpPass := fmt.Sprintf("{{%s}}", r.Password)
-						if strings.Contains(match, tmpPass) {
-							match = strings.Replace(match, tmpPass, "", 1)
-						}
-					}
 					r.Group = strings.Replace(match, "-", "", 1)
 				}
 			case "region":
@@ -217,8 +217,6 @@ func Parse(s string) *Release {
 				r.Language = match
 			case "sbs":
 				r.SBS = match
-			case "password":
-				r.Password = match[2 : len(match)-2]
 			case "size":
 				r.Size = match
 			case "doku":
