@@ -11,7 +11,7 @@ var (
 	episode    = `([Eex]([0-9]{2,4}-?[Eex]?[0-9]{2,4}))|([Eex]([0-9]{2,4}(?:[abc])?)(?:[^0-9]|$))|\b((?:[Eex]p?\.?)([0-9]{2,4}(:?-?(?:[Eex]?p?)[0-9]{2,4})?))\b`
 	year       = `([\[\(]?((?:19[0-9]|20[01])[0-9])[\]\)]?)`
 	resolution = `(?P<480p>480p|640x480|848x480)|(?P<576p>576p)|(?P<720p>720p|1280x720)|(?P<1080p>1080p|1920x1080)|(?P<2160p>2160p)`
-	source     = `(?i)\b(?:(?P<bdrip>BDRip)|(?P<brrip>BRRip)|(?P<bluray>BluRay|Blu-Ray|HDDVD|BD)|(?P<webdl>WEB[-_. ]DL|HDRIP|WEBDL|FUNi-DL|WebRip|Web-Rip|AmazonHD|NetflixHD|iTunesHD|WebHD|[. ]WEB[. ](?:[xh]26[45]|DD5[. ]1)|\\d+0p[. ]WEB[. ])|(?P<hdtv>HDTV)|(?P<scr>SCR|SCREENER|DVDSCR|DVDSCREENER)|(?P<dvd>DVDRip|DVD[^-R]|NTSC|PAL|xvidvd)|(?P<dvdr>DVD-R|DVDR|DVD[0-9])|(?P<dsr>WS[-_. ]DSR|DSR)|(?P<ts>TS|TELESYNC|HD-TS|HDTS|PDVD\b)|(?P<tc>TC|TELECINE|HD-TC|HDTC)|(?P<cam>CAMRIP|CAM|HDCAM|HD-CAM)|(?P<wp>WORKPRINT|WP)|(?P<pdtv>PDTV)|(?P<sdtv>SDTV)|(?P<tvrip>(HD)?TVRip|[ad]TV))\b`
+	source     = `(?i)\b(?:(?P<bdrip>BDRip)|(?P<brrip>BRRip)|(?P<bluray>BluRay|Blu-Ray|HDDVD|BD)|(?P<webdl>WEB[-_. ]DL|HDRIP|WEBDL|FUNi-DL|WebRip|Web-Rip|AmazonHD|NetflixHD|iTunesHD|WebHD|[. ]?WEB[. ](?:[xh]26[45]|DD5[. ]1)|\\d+0p[. ]WEB[. ])|(?P<hdtv>HDTV)|(?P<scr>SCR|SCREENER|DVDSCR|DVDSCREENER)|(?P<dvd>DVDRip|DVD[^-R]|NTSC|PAL|xvidvd)|(?P<dvdr>DVD-R|DVDR|DVD[0-9])|(?P<dsr>WS[-_. ]DSR|DSR)|(?P<ts>TS|TELESYNC|HD-TS|HDTS|PDVD\b)|(?P<tc>TC|TELECINE|HD-TC|HDTC)|(?P<cam>CAMRIP|CAM|HDCAM|HD-CAM)|(?P<wp>WORKPRINT|WP)|(?P<pdtv>PDTV)|(?P<sdtv>SDTV)|(?P<tvrip>(HD)?TVRip|[ad]TV))\b`
 	codec      = `(?i)(?P<x264>x264)|(?P<h264>h264)|(?P<h265>[xh]265|hevc)|(?P<xvidhd>XvidHD)|(?P<xvid>X-?vid)|(?P<divx>divx|mpeg[0-9])(?P<vp>vp(?:8|9))`
 	audio      = `(?i)MP3|FLAC|DD[\s\.]?(2|5)\.?(1|0)|Dual[\- ]Audio|LiNE|DTS|AAC(?:\.?2\.0)?|AC3D?(?:\.5\.1)?`
 	group      = `(?:- ?([^-]+))$`
@@ -126,7 +126,6 @@ func (r *Release) part(name string, match string, clean string) {
 // gets the name of the group that matches, used for AudioGroup, SourceGroup, Resolution, CodecGroup
 func getMatchedGroupName(re *regexp.Regexp, s string) string {
 	match := re.FindStringSubmatch(s)
-
 	for i, name := range re.SubexpNames() {
 		if i > 0 && i <= len(match) {
 			if match[i] != "" {
@@ -190,7 +189,7 @@ func Parse(s string) *Release {
 			case "resolution":
 				r.Resolution = strings.ToLower(getMatchedGroupName(re, match))
 			case "source":
-				r.Source = match
+				r.Source = strings.Trim(match, " ")
 				r.SourceGroup = getMatchedGroupName(re, match)
 
 			case "codec":

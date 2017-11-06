@@ -423,6 +423,18 @@ func TestParse(t *testing.T) {
 			Episode:     9,
 			Group:       "STARS",
 		},
+		"Black Sabbath The End of the End 2017 720p WEB H264-STRiFE{{reAmy0r0vphpzAnch0it5tZoykb6mZ5s}}": &releaseparser.Release{
+			Type:        "movie",
+			Title:       "Black Sabbath The End of the End",
+			Year:        2017,
+			Source:      "WEB H264",
+			Codec:       "H264",
+			SourceGroup: "WEBDL",
+			CodecGroup:  "H264",
+			Resolution:  "720p",
+			Group:       "STRiFE",
+			Password:    "reAmy0r0vphpzAnch0it5tZoykb6mZ5s",
+		},
 	}
 
 	for title, want := range test {
