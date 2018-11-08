@@ -8,7 +8,7 @@ import (
 
 var (
 	season     = `(?i)(s[0-9]{2}-s[0-9]{2}|s([0-9]{1,2})[eEx])|([Ss]?([0-9]{1,2}))[Eex]|([Ss]([0-9]{1,2}))`
-	episode    = `([Eex]([0-9]{2,4}-?[Eex]?[0-9]{2,4}))|([Eex]([0-9]{2,4}(?:[abc])?)(?:[^0-9]|$))|\b((?:[Eex]p?\.?)([0-9]{2,4}(:?-?(?:[Eex]?p?)[0-9]{2,4})?))\b`
+	episode    = `([Eex]([0-9]{2,4}-?[Eex]?[0-9]{2,4}))|([Eex]([0-9]{2,4}(?:[abc])?)(?:[^0-9]|$))|\b((?:[Eex]p?\.?)([0-9]{2,4}(:?-?(?:[Eex]?p?)[0-9]{2,4})?)|[Ee]pisode\s?([0-9]{1,4}))\b`
 	year       = `([\[\(]?((?:19[0-9]|20[01])[0-9])[\]\)]?)`
 	resolution = `(?P<480p>480p|640x480|848x480)|(?P<576p>576p)|(?P<720p>720p|1280x720)|(?P<1080p>1080p|1920x1080)|(?P<2160p>2160p)`
 	source     = `(?i)\b(?:(?P<bdrip>BDRip)|(?P<brrip>BRRip)|(?P<bluray>BluRay|Blu-Ray|HDDVD|BD)|(?P<webdl>WEB[-_. ]DL|HDRIP|WEBDL|FUNi-DL|WebRip|Web-Rip|AmazonHD|NetflixHD|iTunesHD|WebHD|[. ]?WEB[. ](?:[xh]26[45]|DD5[. ]1)|\\d+0p[. ]WEB[. ])|(?P<hdtv>HDTV)|(?P<scr>SCR|SCREENER|DVDSCR|DVDSCREENER)|(?P<dvd>DVDRip|DVD[^-R]|NTSC|PAL|xvidvd)|(?P<dvdr>DVD-R|DVDR|DVD[0-9])|(?P<dsr>WS[-_. ]DSR|DSR)|(?P<ts>TS|TELESYNC|HD-TS|HDTS|PDVD\b)|(?P<tc>TC|TELECINE|HD-TC|HDTC)|(?P<cam>CAMRIP|CAM|HDCAM|HD-CAM)|(?P<wp>WORKPRINT|WP)|(?P<pdtv>PDTV)|(?P<sdtv>SDTV)|(?P<tvrip>(HD)?TVRip|[ad]TV))\b`
@@ -31,6 +31,7 @@ var (
 	size       = `(\d+(?:\.\d+)?(?:GB|MB))`
 	language   = `(?i)\b(?:TRUE)?FR(?:ENCH)?\b|\bDE(?:UTSCH)?\b|\bGERMAN\b|\bEN(?:G(?:LISH)?)?\b|\bVOST(?:(F(?:R)?)|A)?\b|\bMULTI(?:Lang|Truefrench|\-VF2)?\b|\bSUBFRENCH\b|\bHindi\b`
 	password   = `(?i){{(?:[^{}]+)}}`
+	console    = `\b(XBOX|XBOX360|Wii|WiiU|PSP|PS4|NSW|PS3|NDS)\b`
 
 	regexlist = map[string]string{
 		"season":     season,
@@ -56,6 +57,24 @@ var (
 		"sbs":        sbs,
 		"size":       size,
 		"group":      group,
+		"console":    console,
+	}
+
+	releaseTypePC      = "pc"
+	releaseTypeConsole = "console"
+	releaseTypeMovie   = "movie"
+	releaseTypeTV      = "tvshow"
+
+	groupTypeMap = map[string]string{
+		"CODEX":      releaseTypePC,
+		"DARKSiDERS": releaseTypePC,
+		"PLAZA":      releaseTypePC,
+		"RAZOR":      releaseTypePC,
+		"SiMPLEX":    releaseTypePC,
+		"Razor1911":  releaseTypePC,
+		"HOODLUM":    releaseTypePC,
+		"SKIDROW":    releaseTypePC,
+		"ALiAS":      releaseTypePC,
 	}
 )
 
@@ -171,18 +190,20 @@ func Parse(s string) *Release {
 			case "episode":
 				//if make sure we dont match codec as episode
 				if !regexp.MustCompile(codec).MatchString(match) {
+					//remove episode becuase it gets split otherwise
+					clean := regexp.MustCompile("(?i)episode").ReplaceAllString(match, "")
 					//split multiep strings
-					tmp := regexp.MustCompile(`(?i)(\.|-|ep|e|x)`).Split(match, -1)
+					tmp := regexp.MustCompile(`(?i)(\.|-|ep|e|x)`).Split(clean, -1)
 					episodes := []string{}
 					for _, v := range tmp {
 						if v != "" {
 							episodes = append(episodes, v)
 						}
 					}
+					r.Episode = parseInt(episodes[0])
 					if len(episodes) > 1 {
 						r.EpisodeEnd = parseInt(episodes[1])
 					}
-					r.Episode = parseInt(episodes[0])
 				}
 			case "year":
 				r.Year = parseInt(match)
@@ -191,7 +212,6 @@ func Parse(s string) *Release {
 			case "source":
 				r.Source = strings.Trim(match, " ")
 				r.SourceGroup = getMatchedGroupName(re, match)
-
 			case "codec":
 				r.Codec = match
 				r.CodecGroup = getMatchedGroupName(re, match)
@@ -208,6 +228,8 @@ func Parse(s string) *Release {
 				}
 			case "region":
 				r.Region = match
+			case "console":
+				r.Type = releaseTypeConsole
 			case "container":
 				r.Container = strings.Replace(match, ".", "", -1)
 			case "website":
@@ -247,10 +269,18 @@ func Parse(s string) *Release {
 	}
 
 	if r.Season > 0 || r.Episode > 0 && r.Episode != parseInt(r.Codec) {
-		r.Type = "tvshow"
+		r.Type = releaseTypeTV
 	} else {
-		r.Type = "movie"
-		r.Episode = 0
+		for g, t := range groupTypeMap {
+			if r.Group == g {
+				r.Type = t
+			}
+		}
+
+		if r.Type == "" {
+			r.Type = releaseTypeMovie
+			r.Episode = 0
+		}
 	}
 
 	return &r

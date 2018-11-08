@@ -435,6 +435,38 @@ func TestParse(t *testing.T) {
 			Group:       "STRiFE",
 			Password:    "reAmy0r0vphpzAnch0it5tZoykb6mZ5s",
 		},
+		"Tokyo Ghoul: RE S2 - Episode 4 VOSTFR (1080p)": &releaseparser.Release{
+			Type:       "tvshow",
+			Title:      "Tokyo Ghoul: RE",
+			Season:     2,
+			Episode:    4,
+			Resolution: "1080p",
+			Language:   "VOSTFR",
+		},
+		"ARK.Survival.Evolved.Extinction-CODEX": &releaseparser.Release{
+			Type:  "pc",
+			Title: "ARK Survival Evolved Extinction",
+			Group: "CODEX",
+		},
+		"The.Swindle.eShop.NSW-SUXXORS": &releaseparser.Release{
+			Type:  "console",
+			Title: "The Swindle eShop",
+			Group: "SUXXORS",
+		},
+		"Earth.Defense.Force.Insect.Armageddon.NTSC.XBOX360-COMPLEX": &releaseparser.Release{
+			Type:        "console",
+			Title:       "Earth Defense Force Insect Armageddon",
+			Group:       "COMPLEX",
+			Source:      "NTSC",
+			SourceGroup: "DVD",
+		},
+		"Crusty.Demons.Freestyle.Moto.X.USA.DVDRiP.XBOX-GGS": &releaseparser.Release{
+			Type:        "console",
+			Title:       "Crusty Demons Freestyle Moto X USA",
+			Group:       "GGS",
+			Source:      "DVDRiP",
+			SourceGroup: "DVD",
+		},
 	}
 
 	for title, want := range test {
