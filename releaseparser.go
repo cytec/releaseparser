@@ -32,6 +32,7 @@ var (
 	language   = `(?i)\b(?:TRUE)?FR(?:ENCH)?\b|\bDE(?:UTSCH)?\b|\bGERMAN\b|\bEN(?:G(?:LISH)?)?\b|\bVOST(?:(F(?:R)?)|A)?\b|\bMULTI(?:Lang|Truefrench|\-VF2)?\b|\bSUBFRENCH\b|\bHindi\b`
 	password   = `(?i){{(?:[^{}]+)}}`
 	console    = `\b(XBOX|XBOX360|Wii|WiiU|PSP|PS4|NSW|PS3|NDS)\b`
+	version    = `(?i)v(\d+\.)(\d+)(\.\d+)?(\.\d+)?`
 
 	regexlist = map[string]string{
 		"season":     season,
@@ -58,6 +59,7 @@ var (
 		"size":       size,
 		"group":      group,
 		"console":    console,
+		"version":    version,
 	}
 
 	releaseTypePC      = "pc"
@@ -112,6 +114,7 @@ type Release struct {
 	Is3D        bool   `json:"is_3d,omitempty"`        // true if release is in 3D
 	Uncut       bool   `json:"uncut,omitempty"`        // true if release is uncut version
 	Widescreen  bool   `json:"widescreen,omitempty"`   // true if release is a widerscreen/letterbox release
+	Version     string `json:"version,omitempty"`      // contains version information if present
 	start       int
 	end         int
 	parts       map[string]string
@@ -176,6 +179,8 @@ func Parse(s string) *Release {
 		s = pwregex.ReplaceAllString(s, "")
 	}
 
+	s = strings.ReplaceAll(s, "_", ".")
+
 	for name, str := range regexlist {
 		re := regexp.MustCompile(str)
 		if loc := re.FindStringIndex(s); loc != nil {
@@ -207,6 +212,8 @@ func Parse(s string) *Release {
 				}
 			case "year":
 				r.Year = parseInt(match)
+			case "version":
+				r.Version = match
 			case "resolution":
 				r.Resolution = strings.ToLower(getMatchedGroupName(re, match))
 			case "source":

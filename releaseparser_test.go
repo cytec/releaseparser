@@ -467,6 +467,25 @@ func TestParse(t *testing.T) {
 			Source:      "DVDRiP",
 			SourceGroup: "DVD",
 		},
+		"Diablo_III_Eternal_Collection_Update_v2.6.9.68709_NSW-VENOM": &releaseparser.Release{
+			Type:    "console",
+			Title:   "Diablo III Eternal Collection Update",
+			Version: "v2.6.9.68709",
+			Group:   "VENOM",
+		},
+		"SAMURAI_SHODOWN_MULTI_Update_v1.90_NSW-SUXXORS": &releaseparser.Release{
+			Type:     "console",
+			Title:    "SAMURAI SHODOWN",
+			Version:  "v1.90",
+			Language: "MULTI",
+			Group:    "SUXXORS",
+		},
+		"Dead.Dungeon.v1.0.11-SiMPLEX": &releaseparser.Release{
+			Type:    "pc",
+			Title:   "Dead Dungeon",
+			Version: "v1.0.11",
+			Group:   "SiMPLEX",
+		},
 	}
 
 	for title, want := range test {
@@ -478,6 +497,9 @@ func TestParse(t *testing.T) {
 		}
 		if want.Type != parsed.Type {
 			t.Errorf("Type failed, got: %s, want: %s", parsed.Type, want.Type)
+		}
+		if want.Version != parsed.Version {
+			t.Errorf("Version failed, got: %s, want: %s", parsed.Version, want.Version)
 		}
 		if want.Season != parsed.Season {
 			t.Errorf("Season failed, got: %d, want: %d", parsed.Season, want.Season)
